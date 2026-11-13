@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL model tracker</title>
+<style>
+:root{--bg:#eaf0e7;--card:#fff;--ink:#17212b;--mute:#5d6a73;--line:#cdd8ca;--turf:#2f5d3a;--flag:#f2b705;--bad:#b3392f;--good:#2a7a42}
+@media(prefers-color-scheme:dark){:root{--bg:#101712;--card:#18221b;--ink:#e8efe6;--mute:#9aaaa1;--line:#2b3a2f;--turf:#7fc08f;--flag:#f2c230;--bad:#ee8176;--good:#74d28d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+h1{font:700 2rem/1.15 Georgia,"Iowan Old Style",serif;margin:0 0 6px;letter-spacing:-.01em}
+h2{font:700 1.3rem Georgia,serif;margin:30px 0 10px}h3{font-size:.95rem;margin:14px 0 6px}
+.sub,.muted{color:var(--mute)}.sub{max-width:64ch;margin:0 0 20px}
+button{font:inherit;color:inherit;min-width:44px;padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:3px;cursor:pointer}
+button[aria-pressed=true]{background:var(--turf);color:var(--bg);border-color:var(--turf);font-weight:700}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--flag);outline-offset:2px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:8px 0 6px}
+.score div{background:var(--card);padding:10px 14px}.score b{display:block;font:700 1.3rem Georgia,serif}small{display:block;color:var(--mute)}
+.g{background:var(--card);border-bottom:1px solid var(--line)}.g:first-of-type{border-top:1px solid var(--line)}
+summary{display:grid;grid-template-columns:1.1fr 1fr 1fr 1.4fr;gap:6px 16px;padding:12px 14px;cursor:pointer;align-items:start;list-style:none}
+summary::-webkit-details-marker{display:none}summary b{font-variant-numeric:tabular-nums}
+.t{display:inline-block;font-size:.85rem;padding:1px 8px;margin:0 8px 2px 0;border:1px solid var(--line)}
+.t.high{background:var(--turf);color:var(--bg);border-color:var(--turf);font-weight:700}.t.medium{border-left:4px solid var(--flag)}.t.low{border-color:var(--bad);color:var(--bad)}.t.none{color:var(--mute)}
+.ok{color:var(--good)}.no{color:var(--bad)}
+.det{padding:0 14px 16px}.det ul{margin:0;padding:0;list-style:none}.det li{padding:3px 0 3px 10px;border-left:3px solid var(--line);margin:4px 0}
+li.for{border-color:var(--good)}li.against{border-color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+@media(max-width:640px){summary{grid-template-columns:1fr 1fr}summary div:last-child{grid-column:1/-1}}
+</style></head><body><main>
+<h1>NFL model tracker</h1>
+<p class="sub">Our lines next to Vegas, with the reasons behind each lean. The model still trails Vegas overall, so “most confident” means the evidence lines up, not that a bet is safe.</p>
+<div class="bar" id="tabs" role="group" aria-label="View"></div><div class="bar" id="weeks" role="group" aria-label="Week"></div>
+<p class="muted" id="note" style="margin:0 0 6px;font-size:.9rem"></p>
+<div class="score" id="rec"></div>
+<p class="muted" style="font-size:.9rem;margin:0 0 6px">Record of leans against the spread, 2026 so far (52.4% breaks even). Tap any game for the reasoning and player estimates.</p>
+<div id="slate"></div>
+<p class="sub" style="margin-top:32px"><b>Most confident</b>: the ratings and the style matchup agree, and there is no QB question or oversized gap. <b>Single signal</b>: only one of them leans. <b>Pass</b>: the signals lean one way but a QB change, injury-report doubt, an unproven QB, a gap of 7+ points, or disagreeing signals make it too risky. <b>No pick</b>: nothing worth leaning on. Totals leans are shown but not trusted. Data updated <span id="upd"></span>.</p>
+</main>
+<script>
+// After you create the GitHub repo, set this to https://raw.githubusercontent.com/YOU/REPO/site-data/data.json
+const DATA_URL="https://raw.githubusercontent.com/kamshey/nfl-model/site-data/data.json";
+let D,G,UP;const sg=Math.sign,$=id=>document.getElementById(id);const today=new Date().toLocaleDateString("en-CA");
+const ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em";
+const TN={high:"Most confident",medium:"Single signal",low:"Pass: low confidence",none:"No pick"},ORD={high:0,medium:1,low:2,none:3};
+const cover=g=>g.final&&g.spread!=null?sg(g.final[1]-g.final[0]-g.spread):0;
+const leanRes=g=>{const c=cover(g);if(!g.lean||!c)return 0;return(g.lean==g.home?c>0:c<0)?1:-1};
+const mark=(ok)=>` <span class="${ok>0?"ok":"no"}">${ok>0?"✓":"✗"}</span>`;
+const props=g=>!g.props.length?'<p class="muted">No player estimates for this game.</p>':
+ `<table><thead><tr><th>Player</th><th>Estimate (typical miss)${g.final?", then actual":""}</th></tr></thead><tbody>`+g.props.map(p=>`<tr><td>${p.n} <small>${p.t} ${p.p}</small></td><td>${p.s.map(s=>`${s[0]} <b>${s[1]}</b> (±${s[2]})${s[3]!=null?` / ${s[3]}`:""}`).join(" &nbsp; ")}</td></tr>`).join("")+
+ `</tbody></table><p class="muted">Built from recent usage and the game script. No sportsbook prop lines are loaded, so there is nothing to compare them with yet.</p>`;
+const det=g=>`<div class="det"><h3>Why the model sees it this way</h3><ul>${g.why.map(w=>`<li class="${w[0]}">${w[1]}</li>`).join("")}</ul><h3>Player estimates</h3>${props(g)}</div>`;
+const row=g=>{const r=g.final,lr=leanRes(g),ou=r&&g.total!=null?sg(r[0]+r[1]-g.total):0;
+ const lean=!g.lean?"":g.tier=="low"?`<small>Signals lean ${g.lean}, but pass${lr?mark(lr):""}</small>`:g.tier=="medium"?`<small>Weak lean: <b>${g.lean}</b>${lr?mark(lr):""}</small>`:`<b>${g.lean}</b> to cover${lr?mark(lr):""}`;
+ const tot=g.tot?`<small>Model says ${g.tot>0?"over":"under"} (not trusted)${r&&ou?mark(g.tot==ou?1:-1):""}</small>`:"";
+ return`<details class="g"><summary><div><b>${g.away} at ${g.home}</b><small>${r?`Final: ${g.away} ${r[0]}, ${g.home} ${r[1]}`:(g.day<today?"Result pending":g.day)}</small></div>
+ <div>Vegas <b>${g.spread==null?"No line yet":ln(-g.spread,g.home,g.away)}</b><small>Total ${g.total??"–"}</small></div><div>Model <b>${ln(-g.pm,g.home,g.away)}</b><small>Total ${g.pt}</small></div>
+ <div><span class="t ${g.tier}">${TN[g.tier]}</span>${lean}${tot}</div></summary>${det(g)}</details>`};
+let mode="up",pw=1;
+function draw(){
+ $("tabs").innerHTML=`<button aria-pressed="${mode=="up"}" data-m="up">Upcoming: week ${UP}</button><button aria-pressed="${mode=="past"}" data-m="past">Past predictions and results</button>`;
+ $("weeks").innerHTML=mode=="past"?[...Array(UP-1)].map((_,i)=>`<button aria-pressed="${pw==i+1}" data-w="${i+1}">Wk ${i+1}</button>`).join(""):"";
+ const o={};G.filter(g=>g.final).forEach(g=>{const r=leanRes(g);if(r){(o[g.tier]=o[g.tier]||[0,0])[r>0?0:1]++}});
+ $("rec").innerHTML=["high","medium","low"].map(k=>{const[w,l]=o[k]||[0,0];return`<div><b>${w}-${l}</b><small>${TN[k]}${w+l?` (${Math.round(100*w/(w+l))}%)`:""}</small></div>`}).join("");
+ const list=G.filter(g=>g.wk==(mode=="up"?UP:pw)).sort((a,b)=>ORD[a.tier]-ORD[b.tier]||a.day.localeCompare(b.day));let h="";
+ if(mode=="up"){const top=list.filter(g=>g.tier=="high");
+  h=`<h2>Worth a look</h2>`+(top.length?top.map(row).join(""):`<p class="muted">No game clears the bar right now, and sitting out is a fair answer. A game needs the ratings and the style matchup to agree, with no QB question, no injury-report doubt, and no oversized gap.</p>`)+`<h2>Everything else, most confident first</h2>`+list.filter(g=>g.tier!="high").map(row).join("")}
+ else h=`<h2>Week ${pw}</h2>`+list.map(row).join("");
+ $("slate").innerHTML=h}
+document.addEventListener("click",e=>{const d=e.target.dataset||{};if(d.m){mode=d.m;draw()}if(d.w){pw=+d.w;draw()}});
+async function init(){
+ try{const r=await fetch(DATA_URL||"data.json",{cache:"no-cache"});if(!r.ok)throw 0;D=await r.json()}
+ catch(e){$("slate").innerHTML='<p class="muted">The latest data could not be loaded. On a brand-new setup the first data refresh may not have run yet.</p>';return}
+ G=D.games;UP=D.up;pw=Math.max(1,UP-1);const h=(Date.now()-Date.parse(D.generated))/36e5;
+ $("upd").textContent=new Date(D.generated).toLocaleString();
+ $("note").innerHTML=`Predictions refreshed ${h<1?"within the last hour":Math.round(h)+" hours ago"}.`+(h>8?' <b class="no">This looks stale; check that the refresh job is running.</b>':"");
+ draw()}
+init();
+</script></body></html>
