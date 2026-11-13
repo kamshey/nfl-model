@@ -1,0 +1,27 @@
+name: refresh
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python refresh.py data.json
+      - run: |
+          git config user.name "refresh-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git checkout --orphan site-data
+          git rm -rf --cached . -q
+          git add -f data.json
+          git commit -qm "data"
+          git push -f origin site-data
