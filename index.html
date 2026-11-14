@@ -45,7 +45,7 @@ table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left
 </main>
 <script>
 // After you create the GitHub repo, set this to https://raw.githubusercontent.com/YOU/REPO/site-data/data.json
-const DATA_URL="";
+const DATA_URL="https://raw.githubusercontent.com/kamshey/nfl-model/site-data/data.json";
 let D,G,UP,mode="up",pw=1;const sg=Math.sign,$=id=>document.getElementById(id),today=new Date().toLocaleDateString("en-CA");
 const fmt=n=>(n>0?"+":"")+n.toFixed(1),ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em";
 const TN={strong:"Higher confidence",solid:"Medium confidence",lean:"Lower confidence",none:"No pick"},ORD={strong:0,solid:1,lean:2,none:3},LV={strong:["High",3],solid:["Medium",2],lean:["Low",1],nopick:["Low",1]};
