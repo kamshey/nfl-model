@@ -17,11 +17,13 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: python refresh.py data.json
+        env:
+          ARCHIVE_URL: https://raw.githubusercontent.com/${{ github.repository }}/site-data/archive.json
       - run: |
           git config user.name "refresh-bot"
           git config user.email "bot@users.noreply.github.com"
           git checkout --orphan site-data
           git rm -rf --cached . -q
-          git add -f data.json
+          git add -f data.json archive.json
           git commit -qm "data"
           git push -f origin site-data
