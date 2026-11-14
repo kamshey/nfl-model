@@ -1,77 +1,83 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gridcast: NFL game predictions</title>
+<title>NFL Game Predictor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&display=swap">
 <style>
-:root{--bg:#0a1220;--panel:#111c30;--ink:#eaf0fa;--mute:#8fa1bd;--line:#223250;--gold:#ffc533;--cy:#4cc9f0;--good:#46d39a;--bad:#ff7070;--glow:rgba(76,201,240,.16);--stripe:rgba(255,255,255,.022)}
-@media(prefers-color-scheme:light){:root{--bg:#f2f5fb;--panel:#fff;--ink:#0d1b33;--mute:#5a6b86;--line:#d5dcec;--gold:#c98a00;--cy:#0a7ea4;--good:#12834f;--bad:#c23b3b;--glow:rgba(10,126,164,.12);--stripe:rgba(13,27,51,.03)}}
-*{box-sizing:border-box}body{margin:0;color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(900px 380px at 50% -140px,var(--glow),transparent),repeating-linear-gradient(0deg,var(--stripe) 0 2px,transparent 2px 56px),var(--bg);min-height:100vh}
-main{max-width:1000px;margin:0 auto;padding:26px 18px 70px}
-.disp,h1,h2,.pm,.num{font-family:"Barlow Condensed","Arial Narrow",Impact,system-ui,sans-serif}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:3rem;line-height:.95;margin:0;font-weight:800;letter-spacing:.02em;text-transform:uppercase}h1 span{color:var(--gold)}
-.tag{color:var(--mute);margin:4px 0 0}.chip{color:var(--mute);font-size:.85rem;border:1px solid var(--line);padding:3px 10px;border-radius:99px}
-h2{font-size:1.5rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:34px 0 10px;display:flex;align-items:center;gap:10px}h2::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--line),transparent)}
-.bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-button{font:inherit;color:var(--ink);min-width:44px;padding:8px 16px;border:1px solid var(--line);background:var(--panel);border-radius:99px;cursor:pointer}
-button[aria-pressed=true]{background:var(--gold);color:#0a1220;border-color:var(--gold);font-weight:700}
+:root{--bg:#0b1220;--panel:#121c2f;--p2:#18253d;--ink:#e9eef8;--mute:#93a3bf;--line:#26354f;--gold:#ffc83d;--cy:#52b8ff;--good:#4ade9a;--bad:#ff7a7a;--glow:rgba(82,184,255,.14)}
+@media(prefers-color-scheme:light){:root{--bg:#f3f6fb;--panel:#fff;--p2:#eef2f9;--ink:#0d1b33;--mute:#5a6b86;--line:#d6deed;--gold:#c98a00;--cy:#0a73b0;--good:#12834f;--bad:#c23b3b;--glow:rgba(10,115,176,.1)}}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(800px 320px at 50% -120px,var(--glow),transparent),var(--bg);min-height:100vh}
+main{max-width:980px;margin:0 auto;padding:24px 16px 70px}
+.disp,h1,h2,.num,.pm{font-family:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-size:2.6rem;line-height:1;margin:0;font-weight:800;letter-spacing:.02em;text-transform:uppercase}h1 span{color:var(--gold)}
+.tag{color:var(--mute);margin:6px 0 0}.chip{color:var(--mute);font-size:.82rem;border:1px solid var(--line);padding:3px 11px;border-radius:99px;background:var(--panel)}
+h2{font-size:1.45rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:32px 0 6px}.sec{color:var(--mute);margin:0 0 12px;font-size:.93rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);margin-bottom:12px}
+.seg button{border:0;border-radius:0;background:transparent;padding:10px 18px}.seg button[aria-pressed=true]{background:var(--gold);color:#0b1220;font-weight:700}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+button{font:inherit;color:var(--ink);min-width:44px;padding:8px 14px;border:1px solid var(--line);background:var(--panel);border-radius:99px;cursor:pointer}
+.bar button[aria-pressed=true]{background:var(--cy);color:#0b1220;border-color:var(--cy);font-weight:700}
 button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
-.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0 4px}
-.score div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}.num{display:block;font-size:2rem;font-weight:800;line-height:1.05}
-small{display:block;color:var(--mute)}.muted{color:var(--mute)}
-.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px}
-.pk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--line);border-radius:10px;padding:12px 14px}
-.pk.strong{border-top-color:var(--gold)}.pk.solid{border-top-color:var(--cy)}
-.pt{display:flex;justify-content:space-between;color:var(--mute);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
-.pm{font-size:2rem;font-weight:800;line-height:1.1;margin:4px 0}.pg{color:var(--mute);font-size:.92rem}.pc{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}.pc small{width:100%}
-.mt{display:inline-flex;gap:3px}.mt i{width:16px;height:8px;border-radius:2px;background:var(--line)}.mt i.on{background:var(--gold)}.pk.solid .mt i.on{background:var(--cy)}.pk.lean .mt i.on,.pk.nopick .mt i.on{background:var(--mute)}
-.g{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
-summary{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr;gap:6px 16px;padding:12px 16px;cursor:pointer;align-items:center;list-style:none}summary::-webkit-details-marker{display:none}
-summary .num{font-size:1.5rem}.lbl{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-.t{display:inline-block;font-size:.8rem;font-weight:700;padding:1px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mute);margin-right:8px}
-.t.strong{background:var(--gold);color:#0a1220;border-color:var(--gold)}.t.solid{border-color:var(--cy);color:var(--cy)}.t.lean{border-color:var(--mute)}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:6px 0}
+.score div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}.num{display:block;font-size:2rem;font-weight:800;line-height:1.05}
+small{display:block;color:var(--mute);font-size:.85rem}.muted{color:var(--mute)}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--mute);border-radius:12px;padding:12px 14px}.pk.s2{border-top-color:var(--cy)}.pk.s1{border-top-color:var(--gold)}
+.pt{display:flex;justify-content:space-between;gap:8px;color:var(--mute);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.pm{font-size:2.1rem;font-weight:800;line-height:1.1;margin:4px 0}.pc{margin-top:8px}.pc b{margin-left:8px}
+.mt{display:inline-flex;gap:3px;vertical-align:middle}.mt i{width:16px;height:8px;border-radius:2px;background:var(--line)}.mt i.on{background:var(--cy)}.s1 .mt i.on{background:var(--gold)}.s0 .mt i.on{background:var(--mute)}
+.g{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}.g[open]{border-color:var(--cy)}
+summary{display:grid;grid-template-columns:34px 1.35fr 1fr 1fr 1.1fr;gap:6px 14px;padding:14px;cursor:pointer;align-items:center;list-style:none}summary::-webkit-details-marker{display:none}
+summary:hover{background:var(--p2)}summary::before{content:"›";display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;font-size:1.3rem;line-height:1;color:var(--cy);transition:transform .15s}
+.g[open] summary::before{transform:rotate(90deg);background:var(--cy);color:#0b1220}
+summary .num{font-size:1.5rem}.lbl{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:block}
+.t{display:inline-block;font-size:.78rem;font-weight:700;padding:1px 9px;border-radius:99px;border:1px solid var(--cy);color:var(--cy);margin:0 6px 4px 0}.t.m{border-color:var(--mute);color:var(--mute)}.t.slot{border-color:var(--gold);color:var(--gold)}
 .ok{color:var(--good)}.no{color:var(--bad)}
-.det{padding:0 16px 16px}.det h3{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}.det ul{margin:0;padding:0;list-style:none}
-.det li{padding:3px 0 3px 12px;border-left:3px solid var(--line);margin:5px 0}li.for{border-color:var(--good)}li.against{border-color:var(--bad)}
-table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
-.st{display:inline-block;margin:2px 14px 2px 0}.ln{width:64px;margin-left:6px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2px 6px;font:inherit}.res{margin-left:6px;font-weight:700;color:var(--cy)}
-@media(max-width:640px){summary{grid-template-columns:1fr 1fr}summary>div:last-child{grid-column:1/-1}h1{font-size:2.4rem}}
+.det{padding:4px 16px 18px;border-top:1px solid var(--line)}.det h3{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}
+.det ul{margin:0;padding:0;list-style:none}.det li{padding:4px 0 4px 12px;border-left:3px solid var(--line);margin:6px 0}li.for{border-color:var(--good)}li.against{border-color:var(--bad)}
+.tbl{border:1px solid var(--line);border-radius:10px;overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
+th{background:var(--p2);text-align:left;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}th,td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}tbody tr:nth-child(even) td{background:rgba(128,150,190,.07)}
+.ln{width:58px;margin-top:4px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2px 6px;font:inherit;font-size:.85rem}.res{display:block;font-weight:700;color:var(--cy);font-size:.8rem}
+@media(max-width:700px){summary{grid-template-columns:34px 1fr 1fr}summary>div:nth-child(2){grid-column:2/-1}summary>div:last-child{grid-column:1/-1}h1{font-size:2.1rem}}
 </style></head><body><main>
-<header><div><h1>Grid<span>cast</span></h1><p class="tag">NFL game predictions, style matchups and player projections</p></div><span class="chip" id="note"></span></header>
-<div class="bar" id="tabs" role="group" aria-label="View"></div><div class="bar" id="weeks" role="group" aria-label="Week"></div>
-<div class="score" id="rec"></div><small>Locked picks are saved before kickoff and scored after the game. Tap any game for the reasoning and player estimates.</small>
+<header><div><h1>NFL Game <span>Predictor</span></h1><p class="tag">Model lines vs Vegas, matchup reasoning and player projections</p></div><span class="chip" id="note"></span></header>
+<div class="seg" id="tabs" role="group" aria-label="View"></div><div class="bar" id="weeks" role="group" aria-label="Week"></div>
+<div class="score" id="rec"></div>
 <div id="slate"></div>
-<p class="muted" style="margin-top:34px">Picks come only from angles that held up in testing across many seasons. <span id="cal"></span> Data updated <span id="upd"></span>.</p>
+<p class="muted" style="margin-top:34px;font-size:.9rem">Locked picks are saved before kickoff and scored after the game. Leans show how often that kind of gap hit in past testing. <span id="cal"></span> Data updated <span id="upd"></span>.</p>
 </main>
 <script>
 // After you create the GitHub repo, set this to https://raw.githubusercontent.com/YOU/REPO/site-data/data.json
-const DATA_URL="https://raw.githubusercontent.com/kamshey/nfl-model/site-data/data.json";
-let D,G,UP,mode="up",pw=1;const sg=Math.sign,$=id=>document.getElementById(id),today=new Date().toLocaleDateString("en-CA");
-const fmt=n=>(n>0?"+":"")+n.toFixed(1),ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em";
-const TN={strong:"Higher confidence",solid:"Medium confidence",lean:"Lower confidence",none:"No pick"},ORD={strong:0,solid:1,lean:2,none:3},LV={strong:["High",3],solid:["Medium",2],lean:["Low",1],nopick:["Low",1]};
-const cover=g=>g.final&&g.spread!=null?sg(g.final[1]-g.final[0]-g.spread):0;
-const leanRes=g=>{const c=cover(g);if(!g.lean||!c)return 0;return(g.lean==g.home?c>0:c<0)?1:-1};
-const mark=o=>` <span class="${o>0?"ok":"no"}">${o>0?"✓":"✗"}</span>`;
-const meter=n=>`<span class="mt" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>`;
-const props=g=>!g.props.length?'<p class="muted">No player estimates for this game.</p>':
- `<table><thead><tr><th>Player</th><th>${g.final?"Estimate (typical miss) / actual":"Estimate (typical miss), plus a box to test your book’s line"}</th></tr></thead><tbody>`+g.props.map(p=>`<tr><td>${p.n} <small>${p.t} ${p.p}</small></td><td>${p.s.map(s=>`<span class="st">${s[0]} <b>${s[1]}</b> (±${s[2]})${s[3]!=null?` / ${s[3]}`:`<input class="ln" inputmode="decimal" placeholder="line" aria-label="Book line for ${p.n} ${s[0]}" data-e="${s[1]}" data-m="${s[2]}"><span class="res"></span>`}</span>`).join("")}</td></tr>`).join("")+`</tbody></table>`;
+const DATA_URL="";
+let D,G,UP,mode="up",pw=1;const sg=Math.sign,$=id=>document.getElementById(id),today=new Date().toLocaleDateString("en-CA"),DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],GAP={s:3,t:4};
+const fmt=n=>(n>0?"+":"")+n.toFixed(1),ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em",mark=o=>` <span class="${o>0?"ok":"no"}">${o>0?"✓":"✗"}</span>`;
+const meter=n=>`<span class="mt" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>`,LB=["Low","Medium","High"];
+function when(g){if(!g.ko)return{t:g.day,slot:""};const[d,t]=g.ko.split(" "),[y,m,dd]=d.split("-").map(Number),[hh,mm]=(t||"0:0").split(":").map(Number),w=new Date(y,m-1,dd).getDay();
+ return{t:`${DN[w]} ${m}/${dd}, ${((hh+11)%12)+1}:${String(mm).padStart(2,"0")} ${hh<12?"AM":"PM"} ET`,slot:w==4?"Thursday night":w==1?"Monday night":w==0&&hh>=19?"Sunday night":""}}
+const cv=g=>g.final&&g.spread!=null?sg(g.final[1]-g.final[0]-g.spread):0,ouR=g=>g.final&&g.total!=null?sg(g.final[0]+g.final[1]-g.total):0;
+function leans(g){const o=[],S=D.stats||{};
+ if(g.spread!=null){const d=g.pm-g.spread;if(Math.abs(d)>=GAP.s){const h=d>0;o.push({k:"s",mk:"Spread",t:`${h?g.home:g.away} ${fmt(h?-g.spread:g.spread)}`,score:Math.abs(d)/GAP.s,note:`Model rates them ${Math.abs(d).toFixed(1)} pts better than Vegas`,hit:S.s,res:cv(g)?(sg(d)==cv(g)?1:-1):0})}}
+ if(g.total!=null){const d=g.pt-g.total;if(Math.abs(d)>=GAP.t)o.push({k:"t",mk:"Total",t:`${d>0?"OVER":"UNDER"} ${g.total}`,score:Math.abs(d)/GAP.t,note:`Model total ${g.pt} vs Vegas ${g.total}`,hit:S.t,res:ouR(g)?(sg(d)==ouR(g)?1:-1):0})}return o}
+const props=g=>{if(!g.props.length)return'<p class="muted">No player estimates for this game.</p>';const cols=["Rec","Rec yds","Rush yds","Pass yds"].filter(c=>g.props.some(p=>p.s.some(s=>s[0]==c)));
+ return`<div class="tbl"><table><thead><tr><th>Player</th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>`+g.props.map(p=>`<tr><td><b>${p.n}</b><small>${p.t} ${p.p}</small></td>${cols.map(c=>{const s=p.s.find(x=>x[0]==c);return s?`<td><b>${s[1]}</b> <small style="display:inline">±${s[2]}</small>${s[3]!=null?`<small>actual ${s[3]}</small>`:`<input class="ln" inputmode="decimal" placeholder="your line" aria-label="Book line for ${p.n} ${c}" data-e="${s[1]}" data-m="${s[2]}"><span class="res"></span>`}</td>`:"<td>–</td>"}).join("")}</tr>`).join("")+`</tbody></table></div><p class="muted" style="font-size:.85rem">Estimates come from recent usage and the game script (± is the typical miss). Type a sportsbook line in a box to see the model’s over or under chance.</p>`};
 const det=g=>`<div class="det"><h3>Why the model sees it this way</h3><ul>${g.why.map(w=>`<li class="${w[0]}">${w[1]}</li>`).join("")}</ul><h3>Player estimates</h3>${props(g)}</div>`;
-const row=g=>{const r=g.final,pk=(g.picks||[]).map(p=>`<span class="t solid">${p.t}</span>`).join("");
- return`<details class="g"><summary><div><b>${g.away} at ${g.home}</b><small>${r?`Final: ${g.away} ${r[0]}, ${g.home} ${r[1]}`:(g.day<today?"Result pending":g.day)}</small></div>
+function row(g){const r=g.final,w=when(g),pk=(g.picks||[]).map(p=>`<span class="t">${p.t}</span>`).join(""),ls=leans(g).map(l=>`<span class="t m">${l.t}${l.res?mark(l.res):""}</span>`).join("");
+ return`<details class="g"><summary><div><b>${g.away} at ${g.home}</b><small>${r?`Final: ${g.away} ${r[0]}, ${g.home} ${r[1]}`:(g.day<today?"Result pending":w.t)}</small></div>
  <div><span class="lbl">Vegas</span><span class="num">${g.spread==null?"No line":ln(-g.spread,g.home,g.away)}</span><small>Total ${g.total??"–"}</small></div>
  <div><span class="lbl">Model</span><span class="num">${ln(-g.pm,g.home,g.away)}</span><small>Total ${g.pt}</small></div>
- <div>${pk||"<small>No supported angle</small>"}${g.wx?`<small>Kickoff forecast: ${Math.round(g.wx.wind)} mph wind, ${g.wx.temp}°F</small>`:""}</div></summary>${det(g)}</details>`};
-const card=(p,i)=>`<div class="pk ${p.conf>1?"solid":"lean"}"><div class="pt"><span>#${i+1} ${p.mk}</span><span>${p.g.away} at ${p.g.home}</span></div><div class="pm">${p.t}</div><div class="pc">${meter(p.conf)}<b>${p.conf>1?"Medium":"Low"} confidence</b><small>${p.note}</small></div></div>`;
-const topPicks=list=>list.flatMap(g=>(g.picks||[]).map(p=>({...p,g}))).sort((a,b)=>b.conf-a.conf);
+ <div>${w.slot?`<span class="t slot">${w.slot}</span>`:""}${pk}${ls}${g.wx?`<small>Kickoff forecast: ${Math.round(g.wx.wind)} mph wind, ${g.wx.temp}°F</small>`:""}</div></summary>${det(g)}</details>`}
+const card=p=>`<div class="pk s${p.lvl}"><div class="pt"><span>${p.mk}</span><span>${p.g.away} at ${p.g.home}</span></div><div class="pm">${p.t}</div><div class="muted">${when(p.g).t}</div><div class="pc">${meter(p.lvl)}<b>${LB[p.lvl-1]} confidence</b></div><small>${p.note}${p.hit?`. Tested: ${p.hit.pct}% over ${p.hit.n} games`:""}</small></div>`;
 function draw(){
  $("tabs").innerHTML=`<button aria-pressed="${mode=="up"}" data-m="up">Upcoming: week ${UP}</button><button aria-pressed="${mode=="past"}" data-m="past">Past predictions and results</button>`;
  $("weeks").innerHTML=mode=="past"?[...Array(UP-1)].map((_,i)=>`<button aria-pressed="${pw==i+1}" data-w="${i+1}">Wk ${i+1}</button>`).join(""):"";
- const A=D.archive||[],ag=D.angles||[];
- $("rec").innerHTML=ag.map(a=>{const x=A.filter(y=>y.rule==a.id&&(y.res=="W"||y.res=="L")),w=x.filter(y=>y.res=="W").length;return`<div><span class="num">${w}-${x.length-w}</span><small>${a.name}, locked picks</small></div>`}).join("");
- const list=G.filter(g=>g.wk==(mode=="up"?UP:pw)).sort((a,b)=>a.day.localeCompare(b.day));let h="";
- if(mode=="up"){const tp=topPicks(list);
-  h=`<h2>Picks, week ${UP}</h2><p class="muted" style="margin:0 0 10px">Only angles that held up across many seasons of testing. Each pick is saved before kickoff and scored after the game.</p>`+(tp.length?`<div class="picks">${tp.map(card).join("")}</div>`:`<p class="muted">No supported angle applies right now. Tracked: ${ag.map(a=>a.name).join("; ")}.</p>`)+`<h2>All games</h2>`+list.map(row).join("")}
- else{const L=A.filter(a=>a.wk==pw);h=`<h2>Week ${pw}</h2>`+(L.length?`<h3 class="muted">Locked picks</h3>`+L.map(a=>`<p>${a.text}: <b class="${a.res=="W"?"ok":a.res=="L"?"no":""}">${a.res=="W"?"won":a.res=="L"?"lost":a.res=="P"?"push":"pending"}</b></p>`).join(""):"")+list.map(row).join("")}
+ const A=D.archive||[],T=[];const tl=(n,w,l)=>`<div><span class="num">${w}-${l}</span><small>${n}</small></div>`;
+ (D.angles||[]).forEach(a=>{const x=A.filter(y=>y.rule==a.id&&(y.res=="W"||y.res=="L")),w=x.filter(y=>y.res=="W").length;T.push(tl(a.name+", locked",w,x.length-w))});
+ const ks={s:[0,0],t:[0,0]};G.filter(g=>g.final).forEach(g=>leans(g).forEach(l=>{if(l.res)ks[l.k][l.res>0?0:1]++}));
+ $("rec").innerHTML=T.join("")+tl("Model spread leans, this season",...ks.s)+tl("Model total leans, this season",...ks.t);
+ const list=G.filter(g=>g.wk==(mode=="up"?UP:pw)).sort((a,b)=>(a.ko||a.day).localeCompare(b.ko||b.day));let h="";
+ if(mode=="up"){const open=list.filter(g=>!g.final),ap=open.flatMap(g=>(g.picks||[]).map(p=>({...p,g,lvl:p.conf}))),ml=open.flatMap(g=>leans(g).map(l=>({...l,g,lvl:1}))).sort((a,b)=>b.score-a.score).slice(0,6),all=ap.concat(ml);
+  h=`<h2>Top picks this week</h2><p class="sec">Weather and matchup angles first, then the biggest gaps between the model and Vegas.</p>`+(all.length?`<div class="picks">${all.map(card).join("")}</div>`:`<p class="muted">No picks yet. Lines for upcoming games may not be posted.</p>`)+`<h2>All games</h2><p class="sec">Tap a game to see the reasoning and player estimates.</p>`+list.map(row).join("")}
+ else{const L=A.filter(a=>a.wk==pw);h=`<h2>Week ${pw}</h2>`+(L.length?`<p class="sec">Locked picks: ${L.map(a=>`${a.text} <b class="${a.res=="W"?"ok":a.res=="L"?"no":""}">${a.res=="W"?"won":a.res=="L"?"lost":a.res=="P"?"push":"pending"}</b>`).join("; ")}</p>`:`<p class="sec">Tap a game to see the reasoning and player estimates.</p>`)+list.map(row).join("")}
  $("slate").innerHTML=h}
 const erf=x=>{const t=1/(1+.3275911*Math.abs(x)),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y};
 document.addEventListener("click",e=>{const d=e.target.dataset||{};if(d.m){mode=d.m;draw()}if(d.w){pw=+d.w;draw()}});

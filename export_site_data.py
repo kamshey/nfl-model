@@ -154,5 +154,5 @@ for x in ARCH:
         x["res"] = "P" if d == 0 else "W" if (d > 0 if x["rule"] == "wind" else d > 0) else "L"
 out = sys.argv[1] if len(sys.argv) > 1 else "data.json"
 json.dump(ARCH, open(os.path.join(os.path.dirname(out) or ".", "archive.json"), "w"), separators=(",", ":"))
-json.dump(dict(games=games, angles=ANGLES, archive=ARCH, up=UP, season=SEASON, generated=pd.Timestamp.now(tz="UTC").isoformat()), open(out, "w"), separators=(",", ":"))
+json.dump(dict(games=games, angles=ANGLES, archive=ARCH, stats=dict(s=dict(pct=50, n=368), t=dict(pct=50, n=228)), up=UP, season=SEASON, generated=pd.Timestamp.now(tz="UTC").isoformat()), open(out, "w"), separators=(",", ":"))
 t = pd.Series([g["tier"] for g in games if g["wk"] == UP]).value_counts().to_dict(); print("upcoming week", UP, "| games", len([g for g in games if g["wk"] == UP]), "| tiers", t, "| wrote", out)
