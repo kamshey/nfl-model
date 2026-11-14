@@ -48,7 +48,7 @@ th{background:var(--p2);text-align:left;font-size:.75rem;letter-spacing:.08em;te
 </main>
 <script>
 // After you create the GitHub repo, set this to https://raw.githubusercontent.com/YOU/REPO/site-data/data.json
-const DATA_URL="";
+const DATA_URL="https://raw.githubusercontent.com/kamshey/nfl-model/site-data/data.json";
 let D,G,UP,mode="up",pw=1;const sg=Math.sign,$=id=>document.getElementById(id),today=new Date().toLocaleDateString("en-CA"),DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],GAP={s:3,t:4};
 const fmt=n=>(n>0?"+":"")+n.toFixed(1),ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em",mark=o=>` <span class="${o>0?"ok":"no"}">${o>0?"✓":"✗"}</span>`;
 const meter=n=>`<span class="mt" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>`,LB=["Low","Medium","High"];
