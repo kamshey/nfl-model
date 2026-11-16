@@ -32,7 +32,7 @@ summary:hover{background:var(--p2)}summary::before{content:"›";display:grid;pl
 .g[open] summary::before{transform:rotate(90deg);background:var(--cy);color:#0b1220}
 summary .num{font-size:1.5rem}.lbl{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:block}
 .t{display:inline-block;font-size:.78rem;font-weight:700;padding:1px 9px;border-radius:99px;border:1px solid var(--cy);color:var(--cy);margin:0 6px 4px 0}.t.m{border-color:var(--mute);color:var(--mute)}.t.slot{border-color:var(--gold);color:var(--gold)}
-.ok{color:var(--good)}.no{color:var(--bad)}
+.t.wx{border-color:var(--gold);color:var(--gold)}.t.wx.hi{border-color:var(--bad);color:var(--bad)}.ok{color:var(--good)}.no{color:var(--bad)}
 .det{padding:4px 16px 18px;border-top:1px solid var(--line)}.det h3{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}
 .det ul{margin:0;padding:0;list-style:none}.det li{padding:4px 0 4px 12px;border-left:3px solid var(--line);margin:6px 0}li.for{border-color:var(--good)}li.against{border-color:var(--bad)}
 .tbl{border:1px solid var(--line);border-radius:10px;overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
@@ -47,8 +47,6 @@ th{background:var(--p2);text-align:left;font-size:.75rem;letter-spacing:.08em;te
 <p class="muted" style="margin-top:34px;font-size:.9rem">Locked picks are saved before kickoff and scored after the game. Leans show how often that kind of gap hit in past testing. <span id="cal"></span> Data updated <span id="upd"></span>.</p>
 </main>
 <script>
-// After you create the GitHub repo, set this to https://raw.githubusercontent.com/YOU/REPO/site-data/data.json
-const DATA_URL="https://raw.githubusercontent.com/kamshey/nfl-model/site-data/data.json";
 let D,G,UP,mode="up",pw=1;const sg=Math.sign,$=id=>document.getElementById(id),today=new Date().toLocaleDateString("en-CA"),DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],GAP={s:3,t:4};
 const fmt=n=>(n>0?"+":"")+n.toFixed(1),ln=(m,h,a)=>m<0?`${h} ${m.toFixed(1)}`:m>0?`${a} ${(-m).toFixed(1)}`:"Pick’em",mark=o=>` <span class="${o>0?"ok":"no"}">${o>0?"✓":"✗"}</span>`;
 const meter=n=>`<span class="mt" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>`,LB=["Low","Medium","High"];
@@ -59,14 +57,16 @@ function leans(g){const o=[],S=D.stats||{};
  if(g.spread!=null){const d=g.pm-g.spread;if(Math.abs(d)>=GAP.s){const h=d>0;o.push({k:"s",mk:"Spread",t:`${h?g.home:g.away} ${fmt(h?-g.spread:g.spread)}`,score:Math.abs(d)/GAP.s,note:`Model rates them ${Math.abs(d).toFixed(1)} pts better than Vegas`,hit:S.s,res:cv(g)?(sg(d)==cv(g)?1:-1):0})}}
  if(g.total!=null){const d=g.pt-g.total;if(Math.abs(d)>=GAP.t)o.push({k:"t",mk:"Total",t:`${d>0?"OVER":"UNDER"} ${g.total}`,score:Math.abs(d)/GAP.t,note:`Model total ${g.pt} vs Vegas ${g.total}`,hit:S.t,res:ouR(g)?(sg(d)==ouR(g)?1:-1):0})}return o}
 const props=g=>{if(!g.props.length)return'<p class="muted">No player estimates for this game.</p>';const cols=["Rec","Rec yds","Rush yds","Pass yds"].filter(c=>g.props.some(p=>p.s.some(s=>s[0]==c)));
- return`<div class="tbl"><table><thead><tr><th>Player</th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>`+g.props.map(p=>`<tr><td><b>${p.n}</b><small>${p.t} ${p.p}</small></td>${cols.map(c=>{const s=p.s.find(x=>x[0]==c);return s?`<td><b>${s[1]}</b> <small style="display:inline">±${s[2]}</small>${s[3]!=null?`<small>actual ${s[3]}</small>`:`<input class="ln" inputmode="decimal" placeholder="your line" aria-label="Book line for ${p.n} ${c}" data-e="${s[1]}" data-m="${s[2]}"><span class="res"></span>`}</td>`:"<td>–</td>"}).join("")}</tr>`).join("")+`</tbody></table></div><p class="muted" style="font-size:.85rem">Estimates come from recent usage and the game script (± is the typical miss). Type a sportsbook line in a box to see the model’s over or under chance.</p>`};
+ return`<div class="tbl"><table><thead><tr><th>Player</th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>`+g.props.map(p=>`<tr><td><b>${p.n}</b><small>${p.t} ${p.p}</small></td>${cols.map(c=>{const s=p.s.find(x=>x[0]==c);return s?`<td><b>${s[1]}</b> <small style="display:inline">±${s[2]}</small>${s[3]!=null?`<small>actual ${s[3]}</small>`:`<input class="ln" inputmode="decimal" placeholder="your line" aria-label="Book line for ${p.n} ${c}" data-est="${s[1]}" data-miss="${s[2]}"><span class="res"></span>`}</td>`:"<td>–</td>"}).join("")}</tr>`).join("")+`</tbody></table></div><p class="muted" style="font-size:.85rem">Estimates come from recent usage and the game script (± is the typical miss). Type a sportsbook line in a box to see the model’s over or under chance.</p>`};
 const det=g=>`<div class="det"><h3>Why the model sees it this way</h3><ul>${g.why.map(w=>`<li class="${w[0]}">${w[1]}</li>`).join("")}</ul><h3>Player estimates</h3>${props(g)}</div>`;
 function row(g){const r=g.final,w=when(g),pk=(g.picks||[]).map(p=>`<span class="t">${p.t}</span>`).join(""),ls=leans(g).map(l=>`<span class="t m">${l.t}${l.res?mark(l.res):""}</span>`).join("");
  return`<details class="g"><summary><div><b>${g.away} at ${g.home}</b><small>${r?`Final: ${g.away} ${r[0]}, ${g.home} ${r[1]}`:(g.day<today?"Result pending":w.t)}</small></div>
  <div><span class="lbl">Vegas</span><span class="num">${g.spread==null?"No line":ln(-g.spread,g.home,g.away)}</span><small>Total ${g.total??"–"}</small></div>
  <div><span class="lbl">Model</span><span class="num">${ln(-g.pm,g.home,g.away)}</span><small>Total ${g.pt}</small></div>
- <div>${w.slot?`<span class="t slot">${w.slot}</span>`:""}${pk}${ls}${g.wx?`<small>Kickoff forecast: ${Math.round(g.wx.wind)} mph wind, ${g.wx.temp}°F</small>`:""}</div></summary>${det(g)}</details>`}
+ <div>${w.slot?`<span class="t slot">${w.slot}</span>`:""}${pk}${ls}${(g.wx&&g.wx.alerts||[]).map(a=>`<span class="t wx${a.lvl>1?" hi":""}">⚠ ${a.t}</span>`).join("")}${g.wx?`<small>Kickoff forecast: ${Math.round(g.wx.wind)} mph wind, ${g.wx.temp}°F</small>`:""}</div></summary>${det(g)}</details>`}
 const card=p=>`<div class="pk s${p.lvl}"><div class="pt"><span>${p.mk}</span><span>${p.g.away} at ${p.g.home}</span></div><div class="pm">${p.t}</div><div class="muted">${when(p.g).t}</div><div class="pc">${meter(p.lvl)}<b>${LB[p.lvl-1]} confidence</b></div><small>${p.note}${p.hit?`. Tested: ${p.hit.pct}% over ${p.hit.n} games`:""}</small></div>`;
+function weatherWatch(open){const ww=open.filter(g=>g.wx&&g.wx.alerts.length).sort((a,b)=>Math.max(...b.wx.alerts.map(x=>x.lvl))-Math.max(...a.wx.alerts.map(x=>x.lvl)));
+ return ww.length?`<h2>Weather watch</h2><p class="sec">Forecast at kickoff for outdoor games. Wind of 12+ mph has pushed totals under the line 58% of the time.</p>`+ww.map(g=>`<p style="margin:0 0 10px"><b>${g.away} at ${g.home}</b> <span class="muted">${when(g).t}</span><br>${g.wx.alerts.map(a=>`<span class="t wx${a.lvl>1?" hi":""}">⚠ ${a.t}</span>`).join("")}</p>`).join(""):""}
 function draw(){
  $("tabs").innerHTML=`<button aria-pressed="${mode=="up"}" data-m="up">Upcoming: week ${UP}</button><button aria-pressed="${mode=="past"}" data-m="past">Past predictions and results</button>`;
  $("weeks").innerHTML=mode=="past"?[...Array(UP-1)].map((_,i)=>`<button aria-pressed="${pw==i+1}" data-w="${i+1}">Wk ${i+1}</button>`).join(""):"";
@@ -76,15 +76,21 @@ function draw(){
  $("rec").innerHTML=T.join("")+tl("Model spread leans, this season",...ks.s)+tl("Model total leans, this season",...ks.t);
  const list=G.filter(g=>g.wk==(mode=="up"?UP:pw)).sort((a,b)=>(a.ko||a.day).localeCompare(b.ko||b.day));let h="";
  if(mode=="up"){const open=list.filter(g=>!g.final),ap=open.flatMap(g=>(g.picks||[]).map(p=>({...p,g,lvl:p.conf}))),ml=open.flatMap(g=>leans(g).map(l=>({...l,g,lvl:1}))).sort((a,b)=>b.score-a.score).slice(0,6),all=ap.concat(ml);
-  h=`<h2>Top picks this week</h2><p class="sec">Weather and matchup angles first, then the biggest gaps between the model and Vegas.</p>`+(all.length?`<div class="picks">${all.map(card).join("")}</div>`:`<p class="muted">No picks yet. Lines for upcoming games may not be posted.</p>`)+`<h2>All games</h2><p class="sec">Tap a game to see the reasoning and player estimates.</p>`+list.map(row).join("")}
+  h=`<h2>Top picks this week</h2><p class="sec">Weather and matchup angles first, then the biggest gaps between the model and Vegas.</p>`+(all.length?`<div class="picks">${all.map(card).join("")}</div>`:`<p class="muted">No picks yet. Lines for upcoming games may not be posted.</p>`)+weatherWatch(open)+`<h2>All games</h2><p class="sec">Tap a game to see the reasoning and player estimates.</p>`+list.map(row).join("")}
  else{const L=A.filter(a=>a.wk==pw);h=`<h2>Week ${pw}</h2>`+(L.length?`<p class="sec">Locked picks: ${L.map(a=>`${a.text} <b class="${a.res=="W"?"ok":a.res=="L"?"no":""}">${a.res=="W"?"won":a.res=="L"?"lost":a.res=="P"?"push":"pending"}</b>`).join("; ")}</p>`:`<p class="sec">Tap a game to see the reasoning and player estimates.</p>`)+list.map(row).join("")}
  $("slate").innerHTML=h}
 const erf=x=>{const t=1/(1+.3275911*Math.abs(x)),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y};
-document.addEventListener("click",e=>{const d=e.target.dataset||{};if(d.m){mode=d.m;draw()}if(d.w){pw=+d.w;draw()}});
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("button");if(!b)return;const d=b.dataset;if(d.m){mode=d.m;draw()}if(d.w){pw=+d.w;draw()}});
 document.addEventListener("input",e=>{const t=e.target;if(!t.classList||!t.classList.contains("ln"))return;const l=parseFloat(t.value),r=t.nextElementSibling;
- if(isNaN(l)){r.textContent="";return}const p=.5*(1+erf((+t.dataset.e-l)/(+t.dataset.m*1.2533)/Math.SQRT2));r.textContent=p>=.5?`Over ${Math.round(p*100)}%`:`Under ${Math.round((1-p)*100)}%`});
+ if(isNaN(l)){r.textContent="";return}const p=.5*(1+erf((+t.dataset.est-l)/(+t.dataset.miss*1.2533)/Math.SQRT2));r.textContent=p>=.5?`Over ${Math.round(p*100)}%`:`Under ${Math.round((1-p)*100)}%`});
+// Where the data lives: 1) config.json next to this page, e.g. {"dataUrl":"https://..."}; 2) auto-detected when hosted on GitHub Pages; 3) data.json beside the page.
+async function dataUrl(){
+ try{const r=await fetch("config.json",{cache:"no-cache"});if(r.ok){const c=await r.json();if(c.dataUrl)return c.dataUrl}}catch(e){}
+ const m=location.hostname.match(/^(.+)\.github\.io$/);
+ if(m)return`https://raw.githubusercontent.com/${m[1]}/${location.pathname.split("/")[1]||m[1]+".github.io"}/site-data/data.json`;
+ return"data.json"}
 async function init(){
- try{const r=await fetch(DATA_URL||"data.json",{cache:"no-cache"});if(!r.ok)throw 0;D=await r.json()}
+ try{const r=await fetch(await dataUrl(),{cache:"no-cache"});if(!r.ok)throw 0;D=await r.json()}
  catch(e){$("slate").innerHTML='<p class="muted">The latest data could not be loaded. On a brand-new setup the first data refresh may not have run yet.</p>';return}
  G=D.games;UP=D.up;pw=Math.max(1,UP-1);const h=(Date.now()-Date.parse(D.generated))/36e5;
  $("upd").textContent=new Date(D.generated).toLocaleString();$("cal").textContent=(D.angles||[]).map(a=>`${a.name}: ${a.stat}.`).join(" ");
